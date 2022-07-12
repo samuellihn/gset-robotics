@@ -14,3 +14,6 @@ def vec2_to_tank(input_vec: (float, float), scale=900) -> (float, float):
 
 
     return right, left
+
+def clamp(val, minimum, maximum):
+    return max(minimum, min(maximum, val))

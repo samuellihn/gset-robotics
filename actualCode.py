@@ -1,48 +1,53 @@
 #!/usr/bin/env python3
-import time
+#house stuff!!
 
 from ev3dev.ev3 import *
-from simple_pid import PID
-from utils import *
+from time import sleep
 
+drive_l = LargeMotor('outB')
+drive_r = LargeMotor('outC')
+us = UltrasonicSensor()
+ir = InfraredSensor()
+gy = GyroSensor()
+gy.mode = 'GYRO-ANG'
+us.mode = 'US_DIST_CM'
 
-mc = LargeMotor('outB')
-mb = LargeMotor('outC')
-
-cl = ColorSensor()
-cl.mode='COL-REFLECT'
-
-lcd = Screen()
-
-# PID
-pid = PID(1, 0.1, 0.05, setpoint=50)
-
-def func(x):
-    return (1/(-x - 1) + 1) * 2
-
-#follow right side of line
-ideal = 50
-defaultMotorValue = 200
-count = 0
-
-while True:
-    light = cl.value()
-    offset = (light - ideal)/50
-    print(offset)
-    if abs(offset) <= 0.1:
-       count = 0
-    elif abs(offset) > 0.1 and count < defaultMotorValue:
-       count += 2
-    turnSideValue = int(defaultMotorValue - func(abs(offset)) * defaultMotorValue - count)
-    print(turnSideValue)
-
-    if offset < 0:
-        mc.run_forever(speed_sp=turnSideValue)
-        mb.run_forever(speed_sp=defaultMotorValue)
+def ninety(leftright):
+    gy.reset()
+    if leftright:
+        drive_r.runforever(speed_sp = -300)
+        drive_l.runforever(speed_sp = 300)
     else:
-        mb.run_forever(speed_sp=turnSideValue)
-        mc.run_forever(speed_sp=defaultMotorValue)
+        drive_l.runforever(speed_sp = 300)
+        drive_r.runforever(speed_sp = -300)
+    while (abs(gy.angle()) < 90):
+        pass
+    drive_r.brake()
+    drive_l.brake()
 
-    #mb.run_forever(speed_sp=pid(light))
-    #mc.run_forever(speed_sp=pid(light))
+max_ir_value = 0
+prev_ir_value = 0
 
+while(us.value() > 5):
+    drive_r.runforever(speed_sp = 300)
+    drive_l.runforever(speed_sp = 300)
+drive_r.brake()
+drive_l.brake()
+ninety(True) # turn left 90
+
+
+while(True):
+    for i in range(3):
+            # turn left three times in the corner, then turn right for each room
+        while(us.value() > 5):
+            drive_r.runforever(speed_sp=300)
+            drive_l.runforever(speed_sp=300)
+        drive_r.brake()
+        drive_l.brake()
+        drive_r.runforever(speed_sp=300)
+        wait()
+    while(us.value() > 5):
+        drive_r.runforever(speed_sp=300)
+        drive_l.runforever(speed_sp=300)
+        drive_l.brake()
+        wait()

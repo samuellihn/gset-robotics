@@ -1,1 +1,1 @@
-scp -r * robot@169.254.25.221:/home/robot/sync/
+scp -r * robot@169.254.14.66:/home/robot/sync/
